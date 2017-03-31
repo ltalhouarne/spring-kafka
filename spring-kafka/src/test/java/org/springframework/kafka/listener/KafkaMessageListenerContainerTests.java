@@ -732,8 +732,12 @@ public class KafkaMessageListenerContainerTests {
 				return invocation.callRealMethod();
 			}
 			finally {
+				boolean highestOffsetCommitted = true;
 				for (Entry<TopicPartition, OffsetAndMetadata> entry : map.entrySet()) {
-					if (entry.getValue().offset() == 2) {
+					if (entry.getValue().offset() == 1) {
+						highestOffsetCommitted = false;
+						logger.error("The highest offset should be the only one committed.");
+					} else if (highestOffsetCommitted && entry.getValue().offset() == 2) {
 						commitLatch.countDown();
 					}
 				}
