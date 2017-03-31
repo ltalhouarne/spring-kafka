@@ -1088,7 +1088,7 @@ public class KafkaMessageListenerContainer<K, V> extends AbstractMessageListener
 							ConsumerRecord<K, V> consumerRecord = highestOffsetMap.get(record.partition());
 
 							if (consumerRecord == null || record.offset() >= consumerRecord.offset()) {
-                                highestOffsetMap.put(record.partition(), record);
+								highestOffsetMap.put(record.partition(), record);
 							}
 						}
 					}
