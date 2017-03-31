@@ -910,7 +910,11 @@ public class KafkaMessageListenerContainer<K, V> extends AbstractMessageListener
 			if (!this.offsets.containsKey(record.topic())) {
 				this.offsets.put(record.topic(), new HashMap<Integer, Long>());
 			}
-			this.offsets.get(record.topic()).put(record.partition(), record.offset());
+			Map<Integer, Long> highestOffsetMap = this.offsets.get(record.topic());
+
+			if (highestOffsetMap.get(record.partition()) == null || record.offset() > highestOffsetMap.get(record.partition())) {
+				highestOffsetMap.put(record.partition(), record.offset());
+			}
 		}
 
 		private void commitIfNecessary() {
@@ -1080,20 +1084,7 @@ public class KafkaMessageListenerContainer<K, V> extends AbstractMessageListener
 				try {
 					Assert.state(ListenerConsumer.this.isAnyManualAck,
 							"A manual ackmode is required for an acknowledging listener");
-
-					Map<Integer, ConsumerRecord<K, V>> highestOffsetMap = new HashMap<>();
-
 					for (ConsumerRecord<K, V> record : this.records) {
-						if (record != null) {
-							ConsumerRecord<K, V> consumerRecord = highestOffsetMap.get(record.partition());
-
-							if (consumerRecord == null || record.offset() > consumerRecord.offset()) {
-								highestOffsetMap.put(record.partition(), record);
-							}
-						}
-					}
-
-					for (ConsumerRecord<K, V> record: highestOffsetMap.values()) {
 						ListenerConsumer.this.acks.put(record);
 					}
 				}
